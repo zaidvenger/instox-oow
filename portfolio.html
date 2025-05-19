@@ -1,0 +1,78 @@
+<!-- portfolio.html -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Portfolio</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+        <script src="Scripts/supabaseClient.js" defer></script>
+        <script src="Scripts/utils.js" defer></script>
+        <script src="Scripts/portfolio.js" defer></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Portfolio</h1>
+            <div id="userInfo"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Account Summary</div>
+                </div>
+                <div class="card-content">
+                    <h2>Cash in Hand: AED0</h2>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Stocks Currently Owned</div>
+                </div>
+                <div class="card-content" id="stocksOwned">
+                    <p>Loading stocks...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Purchase History</div>
+                </div>
+                <div class="card-content">
+                    <table id="boughtTable" class="data-table">
+                        <tr>
+                            <th>Stock</th>
+                            <th>Quantity</th>
+                            <th>Price Each</th>
+                            <th>Total</th>
+                            <th>Date/Seller</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Sale History</div>
+                </div>
+                <div class="card-content">
+                    <table id="soldTable" class="data-table">
+                        <tr>
+                            <th>Stock</th>
+                            <th>Quantity</th>
+                            <th>Price Each</th>
+                            <th>Total</th>
+                            <th>Date/Buyer</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="window.location.href='purchases.html'">Buy/Sell Stocks</button>
+                <button class="secondary" onclick="window.location.href='index.html'">
+                    Back to Home
+                </button>
+                <button class="destructive" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </body>
+</html>

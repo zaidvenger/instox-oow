@@ -1,0 +1,97 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>InStocks - Stock Market Simulation</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="Scripts/supabaseClient.js" defer></script>
+        <script src="Scripts/utils.js" defer></script>
+
+        <script defer>
+            window.addEventListener("DOMContentLoaded", () => {
+                if (!initPage()) return;
+
+                const role = getRole(); // use helper from utils.js
+                const el = (id) => document.getElementById(id);
+
+                // Hide/show buttons based on role
+                if (role === "trader") {
+                    el("portfolioBtn").style.display = "";
+                    el("purchasesBtn").style.display = "none";
+                    el("leaderboardBtn").style.display = "none";
+                    el("teamRegBtn").style.display = "none";
+                    el("adminButton").style.display = "none";
+                } else if (role === "broker") {
+                    el("portfolioBtn").style.display = "";
+                    el("purchasesBtn").style.display = "";
+                    el("leaderboardBtn").style.display = "";
+                    el("teamRegBtn").style.display = "none";
+                    el("adminButton").style.display = "none";
+                } else if (role === "admin") {
+                    el("portfolioBtn").style.display = "";
+                    el("purchasesBtn").style.display = "";
+                    el("leaderboardBtn").style.display = "";
+                    el("teamRegBtn").style.display = "";
+                    el("adminButton").style.display = "";
+                }
+            });
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Welcome to InStocks</h1>
+            <div id="userInfo"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Navigation</div>
+                    <div class="card-description">Manage your stocks and view market data</div>
+                </div>
+                <div class="card-content">
+                    <div class="button-group">
+                        <button id="portfolioBtn" onclick="window.location.href='portfolio.html'">
+                            View Portfolio
+                        </button>
+                        <button id="purchasesBtn" onclick="window.location.href='purchases.html'">
+                            Buy/Sell Stocks
+                        </button>
+                        <button
+                            id="leaderboardBtn"
+                            onclick="window.location.href='leaderboard.html'"
+                        >
+                            Leaderboard
+                        </button>
+                        <button
+                            id="teamRegBtn"
+                            onclick="window.location.href='team_registration.html'"
+                            class="secondary"
+                        >
+                            Register Team (Admin Only)
+                        </button>
+                        <button id="adminButton" onclick="window.location.href='admin.html'">
+                            Admin Panel
+                        </button>
+                        <button class="destructive" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">About InStocks</div>
+                </div>
+                <div class="card-content">
+                    <p>InStocks is a stock market simulation platform where you can:</p>
+                    <ul>
+                        <li>Buy and sell virtual stocks</li>
+                        <li>Track your portfolio performance</li>
+                        <li>Compete with other traders on the leaderboard</li>
+                    </ul>
+                    <br />
+                    <p>Each team starts with AED100,000 of virtual currency.</p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,57 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Admin Panel</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+        <script src="Scripts/supabaseClient.js" defer></script>
+        <script src="Scripts/utils.js" defer></script>
+        <script src="Scripts/admin.js" defer></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Admin Panel</h1>
+            <div id="userInfo"></div>
+
+            <div id="statusMessage" style="display: none"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Team Management</div>
+                    <div class="card-description">Manage team accounts and balances</div>
+                </div>
+                <div class="card-content">
+                    <table id="adminTable" class="data-table">
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Balance</th>
+                            <th>Activity</th>
+                            <th>Actions</th>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <button class="destructive" onclick="resetAllUsers()">Reset All Users</button>
+                    <button class="destructive" onclick="resetEverything()">Reset Everything</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="secondary" onclick="window.location.href='index.html'">
+                    Back to Home
+                </button>
+                <button class="destructive" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- User Details Modal -->
+            <div id="detailsModal" class="modal">
+                <div class="modal-content modal-info">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <div id="detailsContent"></div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

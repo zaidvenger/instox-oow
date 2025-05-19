@@ -1,0 +1,125 @@
+<!-- purchases.html -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Buy/Sell Stocks</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+        <script src="Scripts/supabaseClient.js" defer></script>
+        <script src="Scripts/utils.js" defer></script>
+        <script src="Scripts/purchases.js" defer></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Buy/Sell Stocks</h1>
+            <div id="userInfo"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Account Balance</div>
+                </div>
+                <div class="card-content">
+                    <h2>Available Funds: <span id="balanceDisplay">AED0</span></h2>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Trade Stocks</div>
+                    <div class="card-description">Buy or sell stocks to other teams</div>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="stockSelect">Select Stock</label>
+                        <select id="stockSelect"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price</label>
+                        <input
+                            type="number"
+                            id="price"
+                            placeholder="Enter price"
+                            min="0.01"
+                            step="0.01"
+                        />
+                        <p class="help-text">Enter a positive number</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <input
+                            type="number"
+                            id="quantity"
+                            placeholder="Enter quantity"
+                            min="1"
+                            step="1"
+                        />
+                        <p class="help-text">Enter a positive integer</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="buyFromUser">Buy From</label>
+                        <select id="buyFromUser"></select>
+                        <p class="help-text">Only required for buying from other team</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="sellToUser">Sell To</label>
+                        <select id="sellToUser"></select>
+                        <p class="help-text">Only required for selling to other team</p>
+                    </div>
+
+                    
+                </div>
+                <div class="card-footer">
+                    <button id="buyButton" class="primary" onclick="buyStock()">Buy</button>
+                    <button onclick="sellStock()">Sell</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Select Participant</div>
+                    <div class="card-description">Choose a participant to trade for</div>
+                </div>
+                <div class="card-content">
+                    <select id="participantSelect">
+                        <option value="">Select Participant</option>
+                        <!-- Populated by JS -->
+                    </select>
+                    <div id="participantWarning" class="warning-message" style="display: none">
+                        Please select a participant before trading.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Buy from IPO</div>
+                </div>
+                <div class="card-content">
+                    <label for="ipoStockSelect">Company</label>
+                    <select id="ipoStockSelect"></select>
+                    <label for="ipoPrice">Price</label>
+                    <input type="number" id="ipoPrice" min="0" step="0.01" />
+                    <label for="ipoQuantity">Quantity</label>
+                    <input type="number" id="ipoQuantity" min="1" step="1" />
+                    <button id="ipoBuyButton" onclick="buyFromIPO()">Buy from IPO</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="secondary" onclick="window.location.href='index.html'">
+                    Back to Home
+                </button>
+                <button class="destructive" onclick="logout()">Logout</button>
+            </div>
+
+            <div id="popupModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closePopup()">&times;</span>
+                    <p id="popupMessage"></p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

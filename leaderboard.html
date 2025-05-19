@@ -1,0 +1,49 @@
+<!-- leaderboard.html -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Leaderboard</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+        <script src="Scripts/supabaseClient.js" defer></script>
+        <script src="Scripts/utils.js" defer></script>
+        <script src="Scripts/leaderboard.js" defer></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Team Leaderboard</h1>
+            <div id="userInfo"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Team Leaderboard</div>
+                    <div class="card-description">
+                        Teams ranked by total portfolio value and stock holdings
+                    </div>
+                </div>
+                <div class="card-content">
+                    <table id="teamLeaderboardTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Team</th>
+                                <th>Total Value</th>
+                                <th>Profit</th>
+                                <th>Stock Quantities</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamLeaderboardBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="window.location.href='purchases.html'">Buy/Sell Stocks</button>
+                <button class="secondary" onclick="window.location.href='index.html'">
+                    Back to Home
+                </button>
+                <button class="destructive" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </body>
+</html>
