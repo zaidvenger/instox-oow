@@ -14,23 +14,15 @@ window.onload = async () => {
     const currentUser = getUser();
 
     // Populate both Buy From and Sell To dropdowns with traders
-    const buyFromDropdown = document.getElementById("buyFromUser");
     const sellToDropdown = document.getElementById("sellToUser");
     const allUsers = await getAllTeams();
     const traders = allUsers.filter(user => user.role === "trader");
     
     // Add blank default options
-    buyFromDropdown.add(new Option("Select Team to BUY FROM", ""));
     sellToDropdown.add(new Option("Select Team to SELL TO", ""));
     
     traders.forEach((user) => {
         if (user.username !== currentUser) {
-            // Add to Buy From dropdown
-            const buyOption = document.createElement("option");
-            buyOption.value = user.username;
-            buyOption.text = user.username;
-            buyFromDropdown.add(buyOption);
-
             // Add to Sell To dropdown
             const sellOption = document.createElement("option");
             sellOption.value = user.username;
@@ -61,10 +53,6 @@ window.onload = async () => {
         participantSelect.appendChild(opt);
     });
 
-    // Set initial state of Buy button
-    const buyButton = document.getElementById("buyButton");
-    buyButton.disabled = !participantSelect.value;
-
     const selected = getCurrentParticipant();
     if (selected) participantSelect.value = selected;
 
@@ -73,12 +61,6 @@ window.onload = async () => {
         participantWarning.style.display = this.value ? "none" : "block";
         updateBalanceDisplay();
 
-        buyButton.disabled = !this.value;
-        if (buyButton.disabled) {
-            buyButton.classList.add("disabled-gray");
-        } else {
-            buyButton.classList.remove("disabled-gray");
-        }
     });
 
     if (!participantSelect.value) participantWarning.style.display = "block";
@@ -122,98 +104,6 @@ async function populateIPODropdown() {
     document.getElementById("ipoPrice").value = "";
 }
 
-// Buy stock (for a participant, not IPO)
-async function buyStock() {
-    const participant = getCurrentParticipant();
-    if (!participant) {
-        document.getElementById("participantWarning").style.display = "block";
-        return;
-    }
-
-    const stock = document.getElementById("stockSelect").value;
-    const price = parseFloat(document.getElementById("price").value);
-    const quantity = parseInt(document.getElementById("quantity").value);
-    const fromUser = document.getElementById("buyFromUser").value;
-
-    if (!fromUser) {
-        showPopup("Please select a trader to buy from.", "error");
-        return;
-    }
-
-    if (!validateTradeInputs(price, quantity)) return;
-
-    const totalCost = price * quantity;
-
-    // Check if buyer has enough funds
-    if (!(await canAffordPurchase(participant, totalCost))) {
-        showPopup(
-            `Cannot buy stocks. Insufficient funds. You need ${formatCurrency(totalCost)}.`,
-            "error"
-        );
-        return;
-    }
-
-    // Check if seller has enough stocks
-    const sellerStocks = await getAvailableStockQuantity(fromUser, stock);
-    if (sellerStocks < quantity) {
-        showPopup(
-            `Seller only has ${sellerStocks} shares of ${stock} available.`,
-            "error"
-        );
-        return;
-    }
-
-    if (!confirmAction(`Buy ${quantity} of ${stock} from ${fromUser} at ${formatCurrency(price)} each?`)) return;
-
-    const timestamp = new Date().toISOString();
-
-    // Get buyer and seller IDs
-    const { data: buyerUser } = await supabase
-        .from("users")
-        .select("id")
-        .eq("username", participant)
-        .single();
-    const { data: sellerUser } = await supabase
-        .from("users")
-        .select("id")
-        .eq("username", fromUser)
-        .single();
-
-    if (!buyerUser || !sellerUser) return showPopup("Buyer or seller not found.", "error");
-
-    // Insert both buy and sell transactions
-    const { error } = await supabase.from("transactions").insert([
-        {
-            user_id: buyerUser.id,
-            stock,
-            price,
-            quantity,
-            type: "buy",
-            counterparty: fromUser,
-            timestamp: timestamp
-        },
-        {
-            user_id: sellerUser.id,
-            stock,
-            price,
-            quantity,
-            type: "sell",
-            counterparty: participant,
-            timestamp: timestamp
-        }
-    ]);
-
-    if (error) {
-        console.error(error);
-        return showPopup("Error recording transaction.", "error");
-    }
-
-    showPopup(
-        `Successfully bought ${quantity} of ${stock} from ${fromUser} at ${formatCurrency(price)}.`,
-        "success"
-    );
-    updateBalanceDisplay();
-}
 
 // Sell stock
 async function sellStock() {
