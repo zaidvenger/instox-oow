@@ -6,20 +6,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadTeamLeaderboard() {
     const tbody = document.getElementById("teamLeaderboardBody");
+    const loadingDiv = document.getElementById("leaderboardLoading");
     tbody.innerHTML = "";
+    loadingDiv.style.display = "block";
 
     const users = await getAllTeams();
-    const leaderboard = [];
+    const traderUsers = users.filter(user => user.role === "trader");
 
-    for (const user of users) {
+    // Fetch all data in parallel
+    const leaderboardPromises = traderUsers.map(async (user) => {
         const username = user.username;
-        if (user.role !== "trader") continue;
+        // Fetch all data for this user in parallel
+        const [balance, stocks, userData] = await Promise.all([
+            calculateBalance(username),
+            getStockHoldings(username),
+            getUserData(username)
+        ]);
 
-        const balance = await calculateBalance(username);
-        const stocks = await getStockHoldings(username);
-        const userData = await getUserData(username);
-
-        // Calculate profit: total earned from sells - total spent on buys
         const totalSpent = userData.bought.reduce(
             (sum, t) => sum + parseFloat(t.price) * parseInt(t.quantity), 0
         );
@@ -28,14 +31,18 @@ async function loadTeamLeaderboard() {
         );
         const profit = totalEarned - totalSpent;
 
-        leaderboard.push({
+        return {
             team: username,
             totalValue: balance,
             profit,
             totalStocks: stocks,
-        });
-    }
+        };
+    });
 
+    // Wait for all leaderboard entries to be ready
+    const leaderboard = await Promise.all(leaderboardPromises);
+
+    // Sort and render
     leaderboard.sort((a, b) => b.totalValue - a.totalValue);
 
     leaderboard.forEach((entry, idx) => {
@@ -54,4 +61,6 @@ async function loadTeamLeaderboard() {
         `;
         tbody.appendChild(row);
     });
+
+    loadingDiv.style.display = "none";
 }

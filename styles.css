@@ -467,6 +467,13 @@ tr:last-child td {
   gap: 0.5rem;
 }
 
+/* Loading message */
+.loading-message {
+    text-align: center;
+    color: #888;
+    margin: 1em 0;
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .container {
