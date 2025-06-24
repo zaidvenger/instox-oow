@@ -38,6 +38,20 @@
                 </div>
             </div>
 
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Set Final IPO Prices</div>
+                    <div class="card-description">Enter the final price for each IPO stock</div>
+                </div>
+                <div class="card-content" id="finalPricesForm">
+                    <!-- Dynamically populated with JS -->
+                </div>
+                <div class="card-footer">
+                    <button onclick="saveFinalPrices()">Save Final Prices</button>
+                    <button onclick="calculatePortfolioValues()">Calculate Portfolio Values</button>
+                </div>
+            </div>
+
             <div class="button-group">
                 <button class="secondary" onclick="window.location.href='index.html'">
                     Back to Home

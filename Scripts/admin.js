@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", function () {
 async function resetEverything() {
     if (
         !confirmAction(
-            "Are you sure you want to reset EVERYTHING? This will clear all transactions and reset IPO shares to 0. This action cannot be undone."
+            "Are you sure you want to reset EVERYTHING? This will clear all transactions and reset IPO shares and final prices to 0. This action cannot be undone."
         )
     ) {
         return;
@@ -209,6 +209,14 @@ async function resetEverything() {
 
         if (ipoError) throw ipoError;
 
+        // Reset all final IPO prices to 0
+        const { error: finalPriceError } = await supabase
+            .from("ipo_final_prices")
+            .update({ final_price: 0 })
+            .not('company', 'is', null); // This matches all rows
+
+        if (finalPriceError) throw finalPriceError;
+
         const message = document.getElementById("statusMessage");
         message.textContent = "Successfully reset everything!";
         message.className = "success-message";
@@ -219,6 +227,7 @@ async function resetEverything() {
         }, 3000);
 
         await loadAdminPanel();
+        await loadFinalPricesForm(); // Refresh the final prices form as well
     } catch (error) {
         console.error("Failed to reset everything:", error);
         const message = document.getElementById("statusMessage");
@@ -227,3 +236,38 @@ async function resetEverything() {
         message.style.display = "block";
     }
 }
+
+// Load the final prices form
+async function loadFinalPricesForm() {
+    const { data: companies } = await supabase.from("ipo").select("company");
+    const { data: finalPrices } = await supabase.from("ipo_final_prices").select("*");
+    const form = document.getElementById("finalPricesForm");
+    form.innerHTML = "";
+
+    companies.forEach(company => {
+        const priceObj = finalPrices?.find(fp => fp.company === company.company);
+        form.innerHTML += `
+            <div>
+                <label>${company.company}:</label>
+                <input type="number" min="0" step="0.01" id="finalPrice_${company.company}" value="${priceObj ? priceObj.final_price : ''}">
+            </div>
+        `;
+    });
+}
+
+// Save the final prices to the DB
+async function saveFinalPrices() {
+    const { data: companies } = await supabase.from("ipo").select("company");
+    for (const company of companies) {
+        const price = parseFloat(document.getElementById(`finalPrice_${company.company}`).value);
+        if (!isNaN(price)) {
+            await supabase.from("ipo_final_prices").upsert([
+                { company: company.company, final_price: price }
+            ]);
+        }
+    }
+    alert("Final prices saved!");
+}
+
+// Call this on page load
+document.addEventListener("DOMContentLoaded", loadFinalPricesForm);

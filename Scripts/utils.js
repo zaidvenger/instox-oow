@@ -163,3 +163,16 @@ async function getStockHoldings(username) {
 
     return holdings;
 }
+
+async function calculatePortfolioValue(username) {
+    const holdings = await getStockHoldings(username);
+    const { data: finalPrices } = await supabase.from("ipo_final_prices").select("*");
+    let total = 0;
+    for (const [stock, qty] of Object.entries(holdings)) {
+        const priceObj = finalPrices.find(fp => fp.company === stock);
+        if (priceObj) {
+            total += qty * parseFloat(priceObj.final_price);
+        }
+    }
+    return total;
+}

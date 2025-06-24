@@ -11,16 +11,18 @@ async function loadTeamLeaderboard() {
     loadingDiv.style.display = "block";
 
     const users = await getAllTeams();
-    const traderUsers = users.filter(user => user.role === "trader");
+    const traderUsers = users.filter(
+        user => user.role === "trader" && user.username !== "Inv_Ins"
+    );
 
     // Fetch all data in parallel
     const leaderboardPromises = traderUsers.map(async (user) => {
         const username = user.username;
-        // Fetch all data for this user in parallel
-        const [balance, stocks, userData] = await Promise.all([
+        const [balance, stocks, userData, portfolioValue] = await Promise.all([
             calculateBalance(username),
             getStockHoldings(username),
-            getUserData(username)
+            getUserData(username),
+            calculatePortfolioValue(username)
         ]);
 
         const totalSpent = userData.bought.reduce(
@@ -36,6 +38,7 @@ async function loadTeamLeaderboard() {
             totalValue: balance,
             profit,
             totalStocks: stocks,
+            portfolioValue
         };
     });
 
@@ -58,6 +61,7 @@ async function loadTeamLeaderboard() {
             <td>${formatCurrency(entry.totalValue)}</td>
             <td>${formatCurrency(entry.profit)}</td>
             <td>${stocks}</td>
+            <td>${formatCurrency(entry.portfolioValue)}</td>
         `;
         tbody.appendChild(row);
     });
