@@ -495,7 +495,7 @@ tr:last-child td {
     position: fixed;
     top: 18px;
     left: 18px;
-    width: 90px;
+    width: 200px;
     opacity: 0.08;
     z-index: 1;
     pointer-events: none;
