@@ -69,7 +69,7 @@ async function loadTeamLeaderboard() {
 
     const users = await getAllTeams();
     const traderUsers = users.filter(
-        user => user.role === "trader" && user.username !== "Inv_Ins"
+        user => user.role === "trader" && user.username !== "Ins_Inv"
     );
 
     leaderboard = [];
