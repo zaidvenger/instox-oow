@@ -269,5 +269,12 @@ async function saveFinalPrices() {
     alert("Final prices saved!");
 }
 
+async function saveAndCalculateValues() {
+    await saveFinalPrices();
+    if (typeof calculatePortfolioValues === "function") {
+        await calculatePortfolioValues();
+    }
+}
+
 // Call this on page load
 document.addEventListener("DOMContentLoaded", loadFinalPricesForm);
