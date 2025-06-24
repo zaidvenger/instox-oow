@@ -95,7 +95,7 @@ function isValidNumber(value) {
 }
 
 function formatCurrency(amount) {
-    return `AED${amount.toLocaleString()}`;
+    return `₹${amount.toLocaleString()}`;
 }
 
 function confirmAction(msg) {
