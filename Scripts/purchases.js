@@ -35,9 +35,6 @@ window.onload = async () => {
     await updateBalanceDisplay();
 
     // Setup input sanitization
-    document.getElementById("price").addEventListener("input", function () {
-        this.value = this.value.replace(/[^0-9.]/g, "");
-    });
     document.getElementById("quantity").addEventListener("input", function () {
         this.value = this.value.replace(/[^0-9]/g, "");
     });
