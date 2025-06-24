@@ -489,3 +489,15 @@ tr:last-child td {
     max-width: 100%;
   }
 }
+
+/* Watermark Logo */
+.watermark-logo {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    width: 90px;
+    opacity: 0.08;
+    z-index: 1;
+    pointer-events: none;
+    user-select: none;
+}
