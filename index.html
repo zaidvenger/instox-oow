@@ -40,66 +40,25 @@
         </script>
     </head>
     <body>
-        <div class="container">
-            <div style="text-align:center;">
-                <img
-                    src="logo.png"
-                    alt="INSTOX Logo"
-                    style="max-width:220px; margin-bottom: 1rem;"
-                />
-            </div>
-            <h1>Welcome to INSTOX</h1>
-            <div id="userInfo"></div>
+        <div class="hero">
+            <div class="hero-overlay"></div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">Navigation</div>
-                    <div class="card-description">Manage your stocks and view market data</div>
-                </div>
-                <div class="card-content">
-                    <div class="button-group">
-                        <button id="portfolioBtn" onclick="window.location.href='portfolio.html'">
-                            View Portfolio
-                        </button>
-                        <button id="purchasesBtn" onclick="window.location.href='purchases.html'">
-                            Buy/Sell Stocks
-                        </button>
-                        <button
-                            id="leaderboardBtn"
-                            onclick="window.location.href='leaderboard.html'"
-                        >
-                            Leaderboard
-                        </button>
-                        <button
-                            id="teamRegBtn"
-                            onclick="window.location.href='team_registration.html'"
-                            class="secondary"
-                        >
-                            Register Team (Admin Only)
-                        </button>
-                        <button id="adminButton" onclick="window.location.href='admin.html'">
-                            Admin Panel
-                        </button>
-                        <button class="destructive" onclick="logout()">Logout</button>
-                    </div>
-                </div>
-            </div>
+            <header class="site-header">
+                <img src="logo.png" alt="INSTOX Logo" class="site-logo" />
+                <div class="site-subtitle">WALL STREET OF OOW</div>
+            </header>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">About INSTOX</div>
+            <main class="login-area">
+                <div class="login-card">
+                    <h2>LOGIN</h2>
+                    <input id="teamUsername" class="login-input" placeholder="TEAM USERNAME" />
+                    <input id="teamPassword" class="login-input" type="password" placeholder="TEAM PASSWORD" />
+                    <button id="loginBtn" class="btn-primary">LOGIN</button>
                 </div>
-                <div class="card-content">
-                    <p>INSTOX is a stock market simulation platform where you can:</p>
-                    <ul>
-                        <li>Buy and sell virtual stocks</li>
-                        <li>Track your portfolio performance</li>
-                        <li>Compete with other traders on the leaderboard</li>
-                    </ul>
-                    <br />
-                    <p>Each team starts with AED100,000 of virtual currency.</p>
-                </div>
-            </div>
+            </main>
+
+            <!-- big subtle watermark centered -->
+            <img src="logo.png" alt="INSTOX Watermark" class="watermark-center" />
         </div>
     </body>
 </html>
