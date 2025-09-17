@@ -6,31 +6,48 @@
         <title>Team Registration</title>
         <link rel="icon" type="image/png" href="icon.png" />
         <link rel="stylesheet" href="styles.css" />
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+        <!-- load Supabase v2 and defer so supabaseClient can use it -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
         <script src="Scripts/supabaseClient.js" defer></script>
         <script src="Scripts/utils.js" defer></script>
 
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 if (!initPage()) return;
+
                 const form = document.getElementById("teamRegForm");
                 const status = document.getElementById("regStatus");
+
                 form.addEventListener("submit", async function (e) {
                     e.preventDefault();
+                    status.innerText = "";
+                    status.className = "";
+
                     const username = document.getElementById("teamUsername").value.trim();
                     const password = document.getElementById("teamPassword").value;
-                    if (!username || !password) {
+                    const role = document.getElementById("teamRole").value;
+
+                    if (!username || !password || !role) {
                         status.innerText = "All fields are required.";
                         status.className = "error-message";
                         return;
                     }
+
                     try {
-                        await registerTeamAccount(username, password);
-                        status.innerText = `Team registered as "${username}".`;
+                        // Insert into your users table (username, password, role)
+                        const { data, error } = await supabase
+                            .from("users")
+                            .insert([{ username, password, role }]);
+
+                        if (error) throw error;
+
+                        status.innerText = `Team "${username}" registered with role "${role}".`;
                         status.className = "success-message";
                         form.reset();
                     } catch (err) {
-                        status.innerText = err.message;
+                        // show helpful message (unique constraint etc.)
+                        status.innerText = err.message || String(err);
                         status.className = "error-message";
                     }
                 });
@@ -45,7 +62,7 @@
                 <div class="card-header">
                     <div class="card-title">Register a Team</div>
                     <div class="card-description">
-                        Create a team login and assign 3 participants
+                        Create a team login and assign a role
                     </div>
                 </div>
                 <div class="card-content">
@@ -57,6 +74,14 @@
                         <label>
                             Team Password:
                             <input type="password" id="teamPassword" required />
+                        </label>
+                        <label>
+                            Role:
+                            <select id="teamRole" required>
+                                <option value="">Select role</option>
+                                <option value="broker">Broker</option>
+                                <option value="trader">Trader</option>
+                            </select>
                         </label>
                         <button type="submit">Register Team</button>
                     </form>
