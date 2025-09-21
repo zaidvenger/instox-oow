@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cash Adjustments</title>
+  <link rel="icon" type="image/png" href="icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="Scripts/supabaseClient.js" defer></script>
+  <script src="Scripts/utils.js" defer></script>
+  <script src="Scripts/adjustments.js" defer></script>
+</head>
+<body>
+  <img src="logo.png" alt="INSTOX Watermark" class="watermark-logo" />
+  <div class="container">
+    <h1>Cash Adjustments (Admin/Broker)</h1>
+
+    <div id="statusMessage" class="info-message" style="display:none"></div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Select Team</div>
+        <div class="card-description">Enter exact team username or pick from suggestions</div>
+      </div>
+      <div class="card-content">
+        <label>
+          Team username
+          <select id="teamInput">
+            <option value="">Select a team</option>
+          </select>
+        </label>
+
+        <label>
+          Amount (positive number)
+          <input id="amountInput" type="number" min="0" step="0.01" />
+        </label>
+
+        <label>
+          Reason
+          <select id="reasonSelect">
+            <option value="">Select reason</option>
+            <option value="Newspaper registration">Newspaper registration</option>
+            <option value="Brokerage registration">Brokerage registration</option>
+            <option value="Illegal Trade">Illegal Trade</option>
+            <option value="Error Correction">Error Correction</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="card-footer">
+        <button id="addButton">Add Funds</button>
+        <button id="subtractButton">Subtract Funds</button>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="secondary" onclick="window.location.href='index.html'">Back to Home</button>
+      <button class="destructive" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</body>
+</html>
