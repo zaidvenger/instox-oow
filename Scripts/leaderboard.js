@@ -89,7 +89,10 @@ async function loadTeamLeaderboard() {
         const totalEarned = userData.sold.reduce(
             (sum, t) => sum + parseFloat(t.price) * parseInt(t.quantity), 0
         );
-        const profit = totalEarned - totalSpent;
+        const adjustmentsSum = (userData.adjustments || []).reduce((sum, a) => {
+            return sum + (parseFloat(a.price || 0) || 0);
+        }, 0);
+        const profit = totalEarned - totalSpent + adjustmentsSum;
 
         leaderboard.push({
             team: username,

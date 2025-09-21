@@ -16,40 +16,63 @@ function removeUser() {
     sessionStorage.removeItem("currentUser");
 }
 
-// === USER DATA ===
-async function getUserData(username) {
-    const { data: user } = await supabase
+// add helper to get user id
+async function getUserId(username) {
+    const { data: user, error } = await supabase
         .from("users")
         .select("id")
         .eq("username", username)
         .single();
-
-    if (!user) return { bought: [], sold: [] };
-
-    const { data, error } = await supabase.from("transactions").select("*").eq("user_id", user.id);
-
-    if (error) {
-        console.error(error);
-        return { bought: [], sold: [] };
-    }
-
-    const bought = data.filter((t) => t.type === "buy");
-    const sold = data.filter((t) => t.type === "sell");
-
-    return { bought, sold };
+    if (error || !user) return null;
+    return user.id;
 }
 
+// Replace getUserData to load all transactions (including adjustments)
+async function getUserData(username) {
+    const userId = await getUserId(username);
+    if (!userId) return { bought: [], sold: [], adjustments: [], transactions: [] };
+
+    const { data: transactions = [], error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", userId)
+        .order("timestamp", { ascending: false });
+
+    if (error) {
+        console.error("Error loading transactions:", error);
+        return { bought: [], sold: [], adjustments: [], transactions: [] };
+    }
+
+    const bought = transactions.filter((t) => t.type === "buy");
+    const sold = transactions.filter((t) => t.type === "sell");
+    const adjustments = transactions.filter((t) => t.type === "adjustment");
+
+    return { bought, sold, adjustments, transactions };
+}
+
+// Replace calculateBalance to include adjustments (price used for signed adjustment)
 async function calculateBalance(username) {
     const data = await getUserData(username);
-    const totalSpent = data.bought.reduce(
-        (sum, t) => sum + parseFloat(t.price) * parseInt(t.quantity),
-        0
-    );
-    const totalEarned = data.sold.reduce(
-        (sum, t) => sum + parseFloat(t.price) * parseInt(t.quantity),
-        0
-    );
-    return parseFloat((INITIAL_BALANCE - totalSpent + totalEarned).toFixed(2));
+
+    const totalSpent = (data.bought || []).reduce((sum, t) => {
+        const q = parseInt(t.quantity || 0, 10) || 0;
+        const p = parseFloat(t.price || 0) || 0;
+        return sum + q * p;
+    }, 0);
+
+    const totalEarned = (data.sold || []).reduce((sum, t) => {
+        const q = parseInt(t.quantity || 0, 10) || 0;
+        const p = parseFloat(t.price || 0) || 0;
+        return sum + q * p;
+    }, 0);
+
+    // adjustments stored as transactions with type='adjustment' and price = signed amount
+    const adjustmentsSum = (data.adjustments || []).reduce((sum, a) => {
+        return sum + (parseFloat(a.price || 0) || 0);
+    }, 0);
+
+    const balance = INITIAL_BALANCE - totalSpent + totalEarned + adjustmentsSum;
+    return parseFloat(balance.toFixed(2));
 }
 
 async function canAffordPurchase(username, cost) {

@@ -28,26 +28,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function displayPortfolio(username) {
     const boughtTable = document.getElementById("boughtTable");
     const soldTable = document.getElementById("soldTable");
+    const adjustmentsTableBody = document.querySelector("#adjustmentsTable tbody");
     const cashElement = document.querySelector(".card-content h2");
     const stocksElement = document.getElementById("stocksOwned");
 
     const role = getRole();
 
-    // Find the card containers so we can hide/show whole sections
     const cashCard = cashElement ? cashElement.closest(".card") : null;
     const boughtCard = boughtTable ? boughtTable.closest(".card") : null;
     const soldCard = soldTable ? soldTable.closest(".card") : null;
     const stocksCard = stocksElement ? stocksElement.closest(".card") : null;
+    const adjustmentsCard = document.getElementById("adjustmentsCard");
 
-    // Clear existing table rows except headers (safe checks)
-    if (boughtTable) {
-        while (boughtTable.rows.length > 1) boughtTable.deleteRow(1);
-    }
-    if (soldTable) {
-        while (soldTable.rows.length > 1) soldTable.deleteRow(1);
-    }
+    if (boughtTable) while (boughtTable.rows.length > 1) boughtTable.deleteRow(1);
+    if (soldTable) while (soldTable.rows.length > 1) soldTable.deleteRow(1);
+    if (adjustmentsTableBody) adjustmentsTableBody.innerHTML = "";
 
-    // Fetch user ID
     const { data: userRecord, error: userError } = await supabase
         .from("users")
         .select("id")
@@ -56,11 +52,11 @@ async function displayPortfolio(username) {
 
     if (userError || !userRecord) {
         console.error("User not found in database.");
-        // If trader, show only stocks card with message
         if (role === "trader") {
             if (cashCard) cashCard.style.display = "none";
             if (boughtCard) boughtCard.style.display = "none";
             if (soldCard) soldCard.style.display = "none";
+            if (adjustmentsCard) adjustmentsCard.style.display = "none";
             if (stocksCard) stocksCard.style.display = "";
             if (stocksElement) stocksElement.innerHTML = `<p>User not found.</p>`;
         }
@@ -69,7 +65,6 @@ async function displayPortfolio(username) {
 
     const userId = userRecord.id;
 
-    // Fetch transactions
     const { data: transactions = [], error: txError } = await supabase
         .from("transactions")
         .select("*")
@@ -81,80 +76,87 @@ async function displayPortfolio(username) {
         return;
     }
 
-    // Categorize transactions
     const bought = transactions.filter((t) => t.type === "buy");
     const sold = transactions.filter((t) => t.type === "sell");
+    const adjustments = transactions.filter((t) => t.type === "adjustment");
 
     let totalSpent = 0;
     let totalEarned = 0;
+    let adjustmentsSum = 0;
     const stocksOwned = {};
 
-    // Process buys
     for (const tx of bought) {
-        const { stock, quantity, price, timestamp, counterparty } = tx;
-        const q = parseInt(quantity, 10) || 0;
-        const p = parseFloat(price) || 0;
+        const q = parseInt(tx.quantity || 0, 10) || 0;
+        const p = parseFloat(tx.price || 0) || 0;
         const total = q * p;
         totalSpent += total;
-
-        stocksOwned[stock] = (stocksOwned[stock] || 0) + q;
-
-        // Only render buy rows for brokers/admins
+        stocksOwned[tx.stock] = (stocksOwned[tx.stock] || 0) + q;
         if (role !== "trader" && boughtTable) {
             const row = boughtTable.insertRow();
             row.innerHTML = `
-                <td>${stock}</td>
+                <td>${tx.stock}</td>
                 <td>${q}</td>
                 <td>${formatCurrency(p)}</td>
                 <td>${formatCurrency(total)}</td>
-                <td>${new Date(timestamp).toLocaleDateString()} from ${counterparty || "Market"}</td>
+                <td>${new Date(tx.timestamp).toLocaleDateString()} from ${tx.counterparty || "Market"}${tx.reason ? " — " + tx.reason : ""}</td>
             `;
         }
     }
 
-    // Process sells
     for (const tx of sold) {
-        const { stock, quantity, price, timestamp, counterparty } = tx;
-        const q = parseInt(quantity, 10) || 0;
-        const p = parseFloat(price) || 0;
+        const q = parseInt(tx.quantity || 0, 10) || 0;
+        const p = parseFloat(tx.price || 0) || 0;
         const total = q * p;
         totalEarned += total;
-
-        stocksOwned[stock] = (stocksOwned[stock] || 0) - q;
-
-        // Only render sell rows for brokers/admins
+        stocksOwned[tx.stock] = (stocksOwned[tx.stock] || 0) - q;
         if (role !== "trader" && soldTable) {
             const row = soldTable.insertRow();
             row.innerHTML = `
-                <td>${stock}</td>
+                <td>${tx.stock}</td>
                 <td>${q}</td>
                 <td>${formatCurrency(p)}</td>
                 <td>${formatCurrency(total)}</td>
-                <td>${new Date(timestamp).toLocaleDateString()} to ${counterparty || "Market"}</td>
+                <td>${new Date(tx.timestamp).toLocaleDateString()} to ${tx.counterparty || "Market"}${tx.reason ? " — " + tx.reason : ""}</td>
             `;
         }
     }
 
-    // Show/hide sections based on role
+    for (const tx of adjustments) {
+        const amt = parseFloat(tx.price || 0) || 0;
+        adjustmentsSum += amt;
+        if (role !== "trader" && adjustmentsTableBody) {
+            const row = adjustmentsTableBody.insertRow();
+            const type = amt >= 0 ? "Credit" : "Debit";
+            const color = amt >= 0 ? "var(--success)" : "var(--destructive)";
+            
+            row.innerHTML = `
+                <td>${type}</td>
+                <td style="color: ${color};">${formatCurrency(amt)}</td>
+                <td>${tx.reason || tx.counterparty || "Adjustment"}</td>
+                <td>${new Date(tx.timestamp).toLocaleDateString()}</td>
+            `;
+        }
+    }
+
     if (role === "trader") {
         if (cashCard) cashCard.style.display = "none";
         if (boughtCard) boughtCard.style.display = "none";
         if (soldCard) soldCard.style.display = "none";
+        if (adjustmentsCard) adjustmentsCard.style.display = "none";
         if (stocksCard) stocksCard.style.display = "";
     } else {
         if (cashCard) cashCard.style.display = "";
         if (boughtCard) boughtCard.style.display = "";
         if (soldCard) soldCard.style.display = "";
         if (stocksCard) stocksCard.style.display = "";
+        if (adjustmentsCard) adjustmentsCard.style.display = adjustments.length > 0 ? "" : "none";
     }
 
-    // Calculate cash in hand
-    const balance = INITIAL_BALANCE + totalEarned - totalSpent;
+    const balance = INITIAL_BALANCE + totalEarned - totalSpent + adjustmentsSum;
     if (cashElement && role !== "trader") {
         cashElement.innerText = `Cash in Hand: ${formatCurrency(balance)}`;
     }
 
-    // Display owned stocks
     const ownedList = Object.entries(stocksOwned)
         .filter(([_, qty]) => qty > 0)
         .map(([stock, qty]) => `<li><span class="stock-name">${stock}</span>: <span class="stock-quantity">${qty}</span></li>`);

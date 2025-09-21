@@ -23,18 +23,21 @@
                     el("leaderboardBtn").style.display = "none";
                     el("teamRegBtn").style.display = "none";
                     el("adminButton").style.display = "none";
+                    el("cashAdjustBtn").style.display = "none";
                 } else if (role === "broker") {
                     el("portfolioBtn").style.display = "";
                     el("purchasesBtn").style.display = "";
                     el("leaderboardBtn").style.display = "";
                     el("teamRegBtn").style.display = "none";
                     el("adminButton").style.display = "none";
+                    el("cashAdjustBtn").style.display = "";
                 } else if (role === "admin") {
                     el("portfolioBtn").style.display = "";
                     el("purchasesBtn").style.display = "";
                     el("leaderboardBtn").style.display = "";
                     el("teamRegBtn").style.display = "";
                     el("adminButton").style.display = "";
+                    el("cashAdjustBtn").style.display = "";
                 }
             });
         </script>
@@ -64,6 +67,12 @@
                         <button id="purchasesBtn" onclick="window.location.href='purchases.html'">
                             Buy/Sell Stocks
                         </button>
+
+                        <!-- new button: visible to broker & admin only -->
+                        <button id="cashAdjustBtn" onclick="window.location.href='otherPurchases.html'">
+                            Cash Adjustments
+                        </button>
+
                         <button
                             id="leaderboardBtn"
                             onclick="window.location.href='leaderboard.html'"

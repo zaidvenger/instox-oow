@@ -28,51 +28,87 @@ async function loadAdminPanel() {
     const traders = users.filter((user) => user.role === "trader");
 
     for (const user of traders) {
-        const userId = user.username;
-        const balance = await calculateBalance(userId);
-        const userData = await getUserData(userId);
-        const hasActivity = userData.bought.length > 0 || userData.sold.length > 0;
+        const username = user.username;
+        const balance = await calculateBalance(username);
+        const userData = await getUserData(username);
+        const hasActivity = (userData.bought?.length || 0) + (userData.sold?.length || 0) > 0;
 
         const row = table.insertRow();
         row.innerHTML = `
-            <td>${userId}</td>
+            <td>${username}</td>
             <td>${user.role}</td>
             <td>${formatCurrency(balance)}</td>
-            <td>${
-                hasActivity
-                    ? userData.bought.length + userData.sold.length + " transactions"
-                    : "No activity"
-            }</td>
+            <td>${hasActivity ? (userData.bought.length + userData.sold.length) + " transactions" : "No activity"}</td>
             <td>
-                <button class="secondary" onclick="resetUser('${userId}')">Reset</button>
-                <button class="secondary" onclick="viewUserDetails('${userId}')">View Details</button>
+                <button class="secondary" onclick="resetUser('${username}')">Reset</button>
+                <button class="secondary" onclick="viewUserDetails('${username}')">View Details</button>
             </td>
         `;
     }
 }
 
 // Reset a single user
-async function resetUser(userId) {
+async function resetUser(username) {
     if (
         !confirmAction(
-            `Are you sure you want to reset ${userId}? This will clear all their transactions.`
+            `Are you sure you want to reset ${username}? This will clear all their transactions.`
         )
     ) {
         return;
     }
 
-    await resetTransactions(userId);
+    const result = await resetTransactions(username);
 
-    const message = document.getElementById("statusMessage");
-    message.textContent = `Reset ${userId} successfully.`;
-    message.className = "success-message";
-    message.style.display = "block";
+    const messageEl = document.getElementById("statusMessage");
+    if (!result.ok) {
+        console.error("Reset user failed:", result.error);
+        if (messageEl) {
+            messageEl.textContent = `Failed to reset ${username}: ${result.error?.message || result.error}`;
+            messageEl.className = "error-message";
+            messageEl.style.display = "block";
+        }
+    } else {
+        if (messageEl) {
+            messageEl.textContent = `Reset ${username} successfully.`;
+            messageEl.className = "success-message";
+            messageEl.style.display = "block";
+        }
+    }
 
     setTimeout(() => {
-        message.style.display = "none";
+        if (messageEl) messageEl.style.display = "none";
     }, 3000);
 
     await loadAdminPanel();
+    if (typeof loadTeamLeaderboard === "function") await loadTeamLeaderboard();
+}
+
+// Helper: Reset a team's transactions
+async function resetTransactions(username) {
+    // Find user id
+    const { data: user, error: userErr } = await supabase
+        .from("users")
+        .select("id")
+        .eq("username", username)
+        .single();
+
+    if (userErr || !user) {
+        console.error(`Failed to find user ${username}:`, userErr);
+        return { ok: false, error: userErr || `User ${username} not found` };
+    }
+
+    // delete transactions for this user
+    const { data, error } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("user_id", user.id);
+
+    if (error) {
+        console.error(`Failed to delete transactions for ${username}:`, error);
+        return { ok: false, error };
+    }
+
+    return { ok: true, deletedCount: Array.isArray(data) ? data.length : (data ? 1 : 0) };
 }
 
 // Reset all users
@@ -85,18 +121,24 @@ async function resetAllUsers() {
         return;
     }
 
-    // Fetch all traders from the database
     const users = await getAllTeams();
     const traders = users.filter((user) => user.role === "trader");
 
-    // Reset transactions for each trader
+    let failed = [];
     for (const trader of traders) {
-        await resetTransactions(trader.username);
+        const res = await resetTransactions(trader.username);
+        if (!res.ok) failed.push({ username: trader.username, error: res.error });
     }
 
     const message = document.getElementById("statusMessage");
-    message.textContent = "All users have been reset successfully.";
-    message.className = "success-message";
+    if (failed.length === 0) {
+        message.textContent = "All users have been reset successfully.";
+        message.className = "success-message";
+    } else {
+        console.error("Failed resets:", failed);
+        message.textContent = `Reset completed with ${failed.length} failures. See console.`;
+        message.className = "error-message";
+    }
     message.style.display = "block";
 
     setTimeout(() => {
@@ -104,22 +146,7 @@ async function resetAllUsers() {
     }, 3000);
 
     await loadAdminPanel();
-}
-
-// Helper: Reset a team's transactions
-async function resetTransactions(username) {
-    const { data: user, error } = await supabase
-        .from("users")
-        .select("id")
-        .eq("username", username)
-        .single();
-
-    if (error || !user) {
-        console.error(`Failed to reset transactions for ${username}:`, error);
-        return;
-    }
-
-    await supabase.from("transactions").delete().eq("user_id", user.id);
+    if (typeof loadTeamLeaderboard === "function") await loadTeamLeaderboard();
 }
 
 // View user details
@@ -193,27 +220,27 @@ async function resetEverything() {
     }
 
     try {
-        // Delete all transactions (match all rows)
-        const { error: transactionError } = await supabase
+        // Delete all transactions
+        const { data: delData, error: transactionError } = await supabase
             .from("transactions")
             .delete()
-            .not('id', 'is', null); // This matches all rows
+            .not("id", "is", null);
 
         if (transactionError) throw transactionError;
 
-        // Reset all IPO shares_sold to 0 (match all rows)
+        // Update IPO shares_sold to 0
         const { error: ipoError } = await supabase
             .from("ipo")
             .update({ shares_sold: 0 })
-            .not('id', 'is', null); // This matches all rows
+            .not("company", "is", null);
 
         if (ipoError) throw ipoError;
 
-        // Reset all final IPO prices to 0
+        // Reset final IPO prices to 0
         const { error: finalPriceError } = await supabase
             .from("ipo_final_prices")
             .update({ final_price: 0 })
-            .not('company', 'is', null); // This matches all rows
+            .not("company", "is", null);
 
         if (finalPriceError) throw finalPriceError;
 
@@ -227,7 +254,7 @@ async function resetEverything() {
         }, 3000);
 
         await loadAdminPanel();
-        await loadFinalPricesForm(); // Refresh the final prices form as well
+        if (typeof loadTeamLeaderboard === "function") await loadTeamLeaderboard();
     } catch (error) {
         console.error("Failed to reset everything:", error);
         const message = document.getElementById("statusMessage");
