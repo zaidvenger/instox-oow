@@ -197,5 +197,6 @@ async function calculatePortfolioValue(username) {
             total += qty * parseFloat(priceObj.final_price);
         }
     }
+    total += await calculateBalance(username);
     return total;
 }
