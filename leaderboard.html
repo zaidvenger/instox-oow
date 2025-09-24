@@ -10,15 +10,19 @@
         <script src="Scripts/utils.js" defer></script>
         <script src="Scripts/leaderboard.js" defer></script>
     </head>
-    <body>
-        <img src="logo.png" alt="INSTOX Watermark" class="watermark-logo" />
-        <div class="container">
-            <h1>Team Leaderboard</h1>
+    <body class="hero">
+        <div class="hero-overlay"></div>
+        <header class="site-header">
+            <div class="site-title">
+                <img src="logo.png" alt="INSTOX Logo" class="site-logo" />
+                <h1>Team Leaderboard</h1>
+            </div>
             <div id="userInfo"></div>
-
+        </header>
+        <div class="container">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title">Team Leaderboard</div>
+                    <div class="card-title">Rankings</div>
                     <div class="card-description">
                         Teams ranked by total portfolio value and stock holdings
                     </div>

@@ -9,6 +9,7 @@ let currentSort = { key: "totalValue", dir: "desc" };
 
 function renderLeaderboardTable() {
     const tbody = document.getElementById("teamLeaderboardBody");
+    const currentUser = getUser(); // Get current logged-in user
     tbody.innerHTML = "";
     leaderboard.forEach((entry, idx) => {
         const stocks =
@@ -16,6 +17,12 @@ function renderLeaderboardTable() {
                 .map(([stock, qty]) => `${stock}: ${qty}`)
                 .join("<br>") || "-";
         const row = document.createElement("tr");
+
+        // Highlight the current user's row
+        if (entry.team === currentUser) {
+            row.classList.add("current-user-row");
+        }
+
         row.innerHTML = `
             <td>${idx + 1}</td>
             <td>${entry.team}</td>

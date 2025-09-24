@@ -4,7 +4,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!initPage()) return;
 
     const role = getRole();
+    const dropdownContainer = document.getElementById("portfolio-dropdown-container");
+
     if (role === "broker" || role === "admin") {
+        // Show the "Select the team" label
+        document.getElementById("selectTeamText").style.display = "block";
+
         const users = await getAllTeams();
         const traders = users.filter((u) => u.role === "trader"); // Only traders
         const dropdown = document.createElement("select");
@@ -15,9 +20,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             opt.text = u.username;
             dropdown.appendChild(opt);
         });
-        document
-            .querySelector(".container")
-            .insertBefore(dropdown, document.querySelector(".card"));
+
+        // Insert the dropdown into the new container
+        dropdownContainer.appendChild(dropdown);
+        
         dropdown.addEventListener("change", () => displayPortfolio(dropdown.value));
         await displayPortfolio(dropdown.value);
     } else {
@@ -29,7 +35,8 @@ async function displayPortfolio(username) {
     const boughtTable = document.getElementById("boughtTable");
     const soldTable = document.getElementById("soldTable");
     const adjustmentsTableBody = document.querySelector("#adjustmentsTable tbody");
-    const cashElement = document.querySelector(".card-content h2");
+    const cashElement = document.querySelector("#cashInHand"); // Corrected selector
+    const netWorthElement = document.getElementById("netWorth");
     const stocksElement = document.getElementById("stocksOwned");
 
     const role = getRole();
@@ -46,7 +53,7 @@ async function displayPortfolio(username) {
 
     const { data: userRecord, error: userError } = await supabase
         .from("users")
-        .select("id")
+        .select("id, initial_balance") // Fetch initial balance
         .eq("username", username)
         .single();
 
@@ -58,7 +65,7 @@ async function displayPortfolio(username) {
             if (soldCard) soldCard.style.display = "none";
             if (adjustmentsCard) adjustmentsCard.style.display = "none";
             if (stocksCard) stocksCard.style.display = "";
-            if (stocksElement) stocksElement.innerHTML = `<p>User not found.</p>`;
+            if (stocksElement) stocksElement.innerHTML = `<p>User Data Empty.</p>`;
         }
         return;
     }
@@ -152,9 +159,32 @@ async function displayPortfolio(username) {
         if (adjustmentsCard) adjustmentsCard.style.display = adjustments.length > 0 ? "" : "none";
     }
 
-    const balance = INITIAL_BALANCE + totalEarned - totalSpent + adjustmentsSum;
+    const cashBalance = userRecord.initial_balance + totalEarned - totalSpent + adjustmentsSum;
     if (cashElement && role !== "trader") {
-        cashElement.innerText = `Cash in Hand: ${formatCurrency(balance)}`;
+        cashElement.innerText = `Cash in Hand: ${formatCurrency(cashBalance)}`;
+    }
+    
+    // Calculate and display Net Worth
+    const { data: stocksData, error: stocksError } = await supabase.from('stocks').select('symbol, price');
+    if (stocksError) {
+        console.error("Error fetching stock prices:", stocksError.message);
+        return;
+    }
+
+    let stocksValue = 0;
+    if (stocksData) {
+        const stockPrices = stocksData.reduce((acc, s) => {
+            acc[s.symbol] = s.price;
+            return acc;
+        }, {});
+        for (const stock in stocksOwned) {
+            stocksValue += stocksOwned[stock] * (stockPrices[stock] || 0);
+        }
+    }
+
+    const netWorth = cashBalance + stocksValue;
+    if (netWorthElement && role !== "trader") {
+        netWorthElement.innerText = `Net Worth: ${formatCurrency(netWorth)}`;
     }
 
     const ownedList = Object.entries(stocksOwned)

@@ -1,53 +1,56 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Login</title>
+        <title>Login - INSTOX</title>
         
         <link rel="icon" type="image/png" href="icon.png" />
         <link rel="stylesheet" href="styles.css" />
 
-        <!-- 🔹 Load Supabase (must be FIRST and use defer) -->
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-
-        <!-- 🔹 Initialize Supabase client (SECOND and defer) -->
         <script src="Scripts/supabaseClient.js" defer></script>
-
-        <!-- 🔹 Load utils and logic (AFTER supabase is ready) -->
         <script src="Scripts/utils.js" defer></script>
         <script src="Scripts/login.js" defer></script>
     </head>
     <body>
-        <div class="container">
-            <h1>INSTOX</h1>
+        <div class="hero-overlay"></div>
+        <img src="logo.png" alt="INSTOX Watermark" class="watermark-center" />
+        <img src="logo.png" alt="INSTOX Logo" class="watermark-logo" />
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">Login</div>
-                    <div class="card-description">
-                        Enter your credentials to access the platform
-                    </div>
+        <div class="content-wrapper">
+            <header class="site-header">
+                <div class="site-title">
+                    <img src="logo.png" alt="INSTOX Logo" class="site-logo" />
+                    <h1>Login - INSTOX</h1>
                 </div>
-                <div class="card-content">
+                <p class="site-subtitle">Stock Market Simulation</p>
+            </header>
+
+            <div class="container">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Login</h2>
+                    </div>
                     <div class="form-group">
                         <label for="username">Team Name</label>
                         <input
                             type="text"
                             id="username"
-                            placeholder="Enter your Team Name (e.g., Team1)"
+                            placeholder="Your Team Name"
                         />
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" placeholder="Enter your password" />
-                        <p class="help-text">Default password is same as teamname</p>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            placeholder="Your Password" 
+                        />
                     </div>
-                </div>
-                <div class="card-footer">
                     <button onclick="login()">Login</button>
                 </div>
             </div>
 
-            <div id="errorMessage" class="error-message" style="display: none"></div>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
         </div>
     </body>
 </html>
