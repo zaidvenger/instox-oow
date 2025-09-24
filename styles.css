@@ -615,3 +615,14 @@ tr:last-child td {
   .watermark-center { width: 260px; top: 8%; }
   .login-card { width: 92%; padding: 18px; }
 }
+
+.login-page .container .card {
+    /* Set the container to use Flexbox */
+    display: flex;
+    
+    /* Stack the items (h1, .card, #errorMessage) vertically */
+    flex-direction: column; 
+    
+    /* Horizontally centers the children within the .container's width (max 800px) */
+    align-items: center; 
+}
